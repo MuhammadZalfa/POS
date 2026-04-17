@@ -171,7 +171,6 @@
     </div>
 </div>
 
-{{-- ===================== MODAL EXPORT ===================== --}}
 <div id="exportModal" class="fixed inset-0 z-50 flex items-center justify-center hidden transition-opacity bg-black/30 backdrop-blur-sm" onclick="closeExportModal(event)">
     <div class="bg-white w-full max-w-md mx-4 rounded-2xl shadow-2xl transform transition-all" onclick="event.stopPropagation()">
         <div class="p-6">
@@ -215,7 +214,6 @@
     </div>
 </div>
 
-{{-- ===================== SCRIPT ===================== --}}
 <script>
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
@@ -224,7 +222,7 @@
         const start = startDateInput.value;
         const end = endDateInput.value;
         alert(`Menampilkan laporan dari ${start} sampai ${end}`);
-        // location.href = `?start=${start}&end=${end}`;
+
     }
 
     function openExportModal() {
@@ -248,10 +246,8 @@
         
         if (format === 'pdf') {
             alert(`Mengekspor laporan PDF dari ${start} sampai ${end}`);
-            // window.location.href = `/laporan/export-pdf?start=${start}&end=${end}`;
         } else if (format === 'excel') {
             alert(`Mengekspor laporan Excel dari ${start} sampai ${end}`);
-            // window.location.href = `/laporan/export-excel?start=${start}&end=${end}`;
         }
         closeExportModal();
     }
@@ -268,7 +264,6 @@
     });
 </script>
 
-{{-- Animasi CSS --}}
 <style>
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(20px); }

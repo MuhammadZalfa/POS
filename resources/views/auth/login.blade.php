@@ -17,12 +17,25 @@
         <p class="text-orange-100 mt-1 text-sm">POS Cilok Kriwil</p>
     </div>
 
-    {{-- Form Login --}}
     <div class="p-8">
+        @if ($errors->any())
+            <div class="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-xl">
+                <ul class="list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @error('email')
+            <div class="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-xl text-sm">
+                {{ $message }}
+            </div>
+        @enderror
         <form method="POST" action="{{ route('login') }}" id="loginForm" onsubmit="return validateForm(event)">
             @csrf
 
-            {{-- Email / Username --}}
             <div class="mb-5">
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email atau Username</label>
                 <div class="relative">
