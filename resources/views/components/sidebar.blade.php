@@ -59,9 +59,9 @@
         </a>
     </nav>
     
-    {{-- Footer / Logout --}}
+    {{-- Footer / Logout untuk Admin (khusus) --}}
     <div class="p-4 border-t border-orange-700/50">
-        <form action="{{ route('logout') }}" method="POST">
+        <form action="{{ route('admin.auth.logoutAdmin') }}" method="POST">
             @csrf
             <button type="submit" class="w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 group text-orange-200 hover:bg-red-800/30 hover:text-white">
                 <div class="w-8 flex justify-center">

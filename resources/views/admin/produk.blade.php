@@ -28,6 +28,21 @@
                 Tambah Produk
             </button>
         </div>
+        @if(session('success'))
+            <div class="mb-4 rounded-xl bg-green-50 border border-green-200 text-green-700 px-4 py-3">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 px-4 py-3">
+                <ul class="list-disc pl-5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         {{-- Tabel Produk --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up" style="animation-delay: 0.1s">
@@ -61,74 +76,50 @@
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Produk</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga Modal</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga Jual</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Margin</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
+                        @foreach($products as $product)
                         @php
-                            $products = [
-                                ['id' => 1, 'name' => 'Cilok Original', 'category' => 'Cilok', 'modal' => 2500, 'jual' => 5000, 'margin' => 50, 'status' => 'Aktif'],
-                                ['id' => 2, 'name' => 'Cilok Pedas', 'category' => 'Cilok', 'modal' => 2500, 'jual' => 5000, 'margin' => 50, 'status' => 'Aktif'],
-                                ['id' => 3, 'name' => 'Cilok Keju', 'category' => 'Cilok', 'modal' => 3500, 'jual' => 7000, 'margin' => 50, 'status' => 'Aktif'],
-                                ['id' => 4, 'name' => 'Cilok Bakso', 'category' => 'Cilok', 'modal' => 4000, 'jual' => 8000, 'margin' => 50, 'status' => 'Aktif'],
-                                ['id' => 5, 'name' => 'Teh Manis', 'category' => 'Minuman', 'modal' => 1000, 'jual' => 3000, 'margin' => 67, 'status' => 'Aktif'],
-                                ['id' => 6, 'name' => 'Es Jeruk', 'category' => 'Minuman', 'modal' => 2000, 'jual' => 5000, 'margin' => 60, 'status' => 'Aktif'],
-                                ['id' => 7, 'name' => 'Teh Tawar', 'category' => 'Minuman', 'modal' => 500, 'jual' => 2000, 'margin' => 75, 'status' => 'Aktif'],
-                                ['id' => 8, 'name' => 'Gorengan', 'category' => 'Lainnya', 'modal' => 800, 'jual' => 2000, 'margin' => 60, 'status' => 'Aktif'],
-                            ];
+                            $hargaJual = (float) $product->harga;
                         @endphp
-
-                        @foreach($products as $index => $product)
                         <tr class="hover:bg-orange-50/30 transition-colors group">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $product['name'] }}</div>
+                                <div class="font-medium text-gray-900">{{ $product->nama_produk }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2.5 py-1 text-xs font-medium rounded-full 
-                                    {{ $product['category'] == 'Cilok' ? 'bg-blue-50 text-blue-700' : '' }}
-                                    {{ $product['category'] == 'Minuman' ? 'bg-cyan-50 text-cyan-700' : '' }}
-                                    {{ $product['category'] == 'Lainnya' ? 'bg-gray-100 text-gray-700' : '' }}">
-                                    {{ $product['category'] }}
+                                <span class="inline-flex px-2.5 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700">
+                                    {{ $product->kategori->nama_kategori ?? '-' }}
                                 </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                Rp {{ number_format($product['modal'], 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                Rp {{ number_format($product['jual'], 0, ',', '.') }}
+                                Rp {{ number_format($hargaJual, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-sm font-semibold {{ $product['margin'] >= 60 ? 'text-green-600' : 'text-orange-600' }}">
-                                        {{ $product['margin'] }}%
+                                @if($product->status)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Aktif
                                     </span>
-                                    <div class="w-12 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                        <div class="h-full {{ $product['margin'] >= 60 ? 'bg-green-500' : 'bg-orange-400' }}" style="width: {{ $product['margin'] }}%"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                    {{ $product['status'] }}
-                                </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                        Nonaktif
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    {{-- Tombol Edit --}}
-                                    <button onclick="openEditModal({{ $index }})" class="p-1.5 rounded-lg text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition-colors" title="Edit">
+                                    <button class="p-1.5 rounded-lg text-gray-400 cursor-not-allowed" title="Edit belum dibuat">
                                         <img src="{{ asset('images/edit.png') }}" class="w-5 h-5" alt="Edit">
                                     </button>
-                                    {{-- Tombol Toggle Status (Aktif/Nonaktif) --}}
-                                    <button onclick="toggleStatus({{ $index }})" class="p-1.5 rounded-lg text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition-colors" title="Nonaktifkan">
+                                    <button class="p-1.5 rounded-lg text-gray-400 cursor-not-allowed" title="Toggle belum dibuat">
                                         <img src="{{ asset('images/check.png') }}" class="w-5 h-5" alt="Toggle Status">
                                     </button>
-                                    {{-- Tombol Hapus --}}
-                                    <button onclick="openDeleteModal({{ $index }})" class="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors" title="Hapus">
+                                    <button class="p-1.5 rounded-lg text-gray-400 cursor-not-allowed" title="Hapus belum dibuat">
                                         <img src="{{ asset('images/trash.png') }}" class="w-5 h-5" alt="Hapus">
                                     </button>
                                 </div>
@@ -155,40 +146,85 @@
                 </button>
             </div>
 
-            <form id="addProductForm" onsubmit="saveNewProduct(event)">
+            <form id="addProductForm" method="POST" action="{{ route('admin.produk.store') }}">
+                @csrf
+
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Produk <span class="text-red-500">*</span></label>
-                        <input type="text" id="productName" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition" placeholder="Contoh: Cilok Keju">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Nama Produk <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="productName"
+                            name="nama_produk"
+                            value="{{ old('nama_produk') }}"
+                            required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition"
+                            placeholder="Contoh: Cilok Keju">
                     </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kategori <span class="text-red-500">*</span></label>
-                        <select id="productCategory" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Kategori <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            id="productCategory"
+                            name="id_kategori"
+                            required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
                             <option value="">Pilih Kategori</option>
-                            <option value="Cilok">Cilok</option>
-                            <option value="Minuman">Minuman</option>
-                            <option value="Lainnya">Lainnya</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id_kategori }}" {{ old('id_kategori') == $category->id_kategori ? 'selected' : '' }}>
+                                    {{ $category->nama_kategori }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Harga Modal (Rp) <span class="text-red-500">*</span></label>
-                        <input type="number" id="costPrice" min="0" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition" placeholder="Contoh: 3500">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Harga (Rp) <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            id="sellingPrice"
+                            name="harga"
+                            min="0"
+                            value="{{ old('harga') }}"
+                            required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition"
+                            placeholder="Contoh: 7000">
                     </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Harga Jual (Rp) <span class="text-red-500">*</span></label>
-                        <input type="number" id="sellingPrice" min="0" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition" placeholder="Contoh: 7000">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                        <textarea
+                            name="deskripsi"
+                            rows="3"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition"
+                            placeholder="Deskripsi produk">{{ old('deskripsi') }}</textarea>
                     </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select id="productStatus" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
-                            <option value="Aktif">Aktif</option>
-                            <option value="Nonaktif">Nonaktif</option>
+                        <select
+                            id="productStatus"
+                            name="status"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
+                            <option value="1" {{ old('status', '1') == '1' ? 'selected' : '' }}>Aktif</option>
+                            <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Nonaktif</option>
                         </select>
                     </div>
                 </div>
+
                 <div class="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="closeAddProductModal()" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-xl shadow-md shadow-orange-200 transition-all">Simpan Produk</button>
+                    <button type="button" onclick="closeAddProductModal()" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-xl shadow-md shadow-orange-200 transition-all">
+                        Simpan Produk
+                    </button>
                 </div>
             </form>
         </div>
@@ -284,24 +320,6 @@
         if (!event || event.target === document.getElementById('addProductModal')) {
             document.getElementById('addProductModal').classList.add('hidden');
         }
-    }
-
-    function saveNewProduct(event) {
-        event.preventDefault();
-        const name = document.getElementById('productName').value;
-        const category = document.getElementById('productCategory').value;
-        const cost = parseInt(document.getElementById('costPrice').value);
-        const sell = parseInt(document.getElementById('sellingPrice').value);
-        const status = document.getElementById('productStatus').value;
-
-        if (sell < cost) {
-            alert('Harga jual tidak boleh kurang dari harga modal!');
-            return;
-        }
-
-        alert(`Produk "${name}" berhasil ditambahkan!\nKategori: ${category}\nModal: Rp ${cost.toLocaleString()}\nJual: Rp ${sell.toLocaleString()}\nStatus: ${status}`);
-        closeAddProductModal();
-        // location.reload();
     }
 
     // --- Modal Edit ---

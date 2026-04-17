@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Produk;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class ProdukController extends Controller
         $products = Produk::with('kategori')->orderBy('id_produk', 'desc')->get();
         $categories = Kategori::orderBy('nama_kategori')->get();
 
-        return view('produk', compact('products', 'categories'));
+        return view('admin.produk', compact('products', 'categories'));
     }
 
     public function store(Request $request)
@@ -35,6 +36,6 @@ class ProdukController extends Controller
 
         Produk::create($validated);
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan.');
+        return redirect()->route('admin.products')->with('success', 'Produk berhasil ditambahkan.');
     }
 }

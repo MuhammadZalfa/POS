@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\ProdukController;
 
-
 // Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -17,16 +16,18 @@ Route::middleware('guest')->group(function () {
 // Logout default (untuk kasir & umum)
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
-// Admin routes
+// Admin routes (semua route admin di sini)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', fn() => view('admin.dashboard'))->name('dashboard');
-    Route::get('/products', fn() => view('admin.produk'))->name('products');
-    Route::get('/inventory', fn() => view('admin.inventori'))->name('inventory');
-    Route::get('/laporan', fn() => view('admin.laporan'))->name('laporan');
-    Route::get('/produk', [ProdukController::class, 'index'])->name('produk.index');
+    
+    // Route untuk produk menggunakan controller
+    Route::get('/produk', [ProdukController::class, 'index'])->name('products');
     Route::post('/produk', [ProdukController::class, 'store'])->name('produk.store');
     
-    // Halaman pilih peran (setelah admin "keluar" tapi tidak benar2 logout)
+    Route::get('/inventaris', fn() => view('admin.inventori'))->name('inventory');
+    Route::get('/laporan', fn() => view('admin.laporan'))->name('laporan');
+    
+    // Halaman pilih peran (setelah admin "keluar" tanpa logout)
     Route::get('/pilih-peran', fn() => view('auth.logoutAdmin'))->name('pilihPeran');
     
     // Proses logout admin (tidak menghapus session, hanya redirect ke pilih peran)
@@ -40,10 +41,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     })->name('auth.logoutAdmin');
 });
 
-// Kasir routes (hanya untuk role kasir)
+// Kasir routes
 Route::middleware(['auth', 'kasir'])->prefix('kasir')->name('kasir.')->group(function () {
     Route::get('/dashboard', fn() => view('kasir.dashboard'))->name('dashboard');
-    // Route lain untuk kasir (jika ada)
 });
 
 // Halaman utama kasir (transaksi) - bisa diakses oleh admin maupun kasir
