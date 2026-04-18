@@ -33,6 +33,11 @@
                 {{ session('success') }}
             </div>
         @endif
+        @if(session('error'))
+            <div class="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 px-4 py-3">
+                {{ session('error') }}
+            </div>
+        @endif
 
         @if($errors->any())
             <div class="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 px-4 py-3">
@@ -113,15 +118,42 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <button class="p-1.5 rounded-lg text-gray-400 cursor-not-allowed" title="Edit belum dibuat">
+                                    <button
+                                        type="button"
+                                        data-id="{{ $product->id_produk }}"
+                                        data-update-url="{{ route('admin.produk.update', $product) }}"
+                                        data-nama="{{ $product->nama_produk }}"
+                                        data-id_kategori="{{ $product->id_kategori }}"
+                                        data-harga="{{ (float) $product->harga }}"
+                                        data-deskripsi="{{ $product->deskripsi }}"
+                                        data-status="{{ $product->status ? 1 : 0 }}"
+                                        onclick="openEditModal(this)"
+                                        class="p-1.5 rounded-lg hover:bg-orange-50 transition-colors"
+                                        title="Edit Produk">
                                         <img src="{{ asset('images/edit.png') }}" class="w-5 h-5" alt="Edit">
                                     </button>
-                                    <button class="p-1.5 rounded-lg text-gray-400 cursor-not-allowed" title="Toggle belum dibuat">
-                                        <img src="{{ asset('images/check.png') }}" class="w-5 h-5" alt="Toggle Status">
-                                    </button>
-                                    <button class="p-1.5 rounded-lg text-gray-400 cursor-not-allowed" title="Hapus belum dibuat">
-                                        <img src="{{ asset('images/trash.png') }}" class="w-5 h-5" alt="Hapus">
-                                    </button>
+
+                                    <form method="POST" action="{{ route('admin.produk.toggle', $product) }}"
+                                        onsubmit="return confirm('Ubah status produk {{ $product->nama_produk }}?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit"
+                                            class="p-1.5 rounded-lg hover:bg-orange-50 transition-colors"
+                                            title="Toggle Status">
+                                            <img src="{{ asset('images/check.png') }}" class="w-5 h-5" alt="Toggle Status">
+                                        </button>
+                                    </form>
+
+                                    <form method="POST" action="{{ route('admin.produk.destroy', $product) }}"
+                                        onsubmit="return confirm('Hapus produk {{ $product->nama_produk }}? Tindakan ini tidak bisa dibatalkan.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                            title="Hapus Produk">
+                                            <img src="{{ asset('images/trash.png') }}" class="w-5 h-5" alt="Hapus">
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -196,6 +228,41 @@
                             class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition"
                             placeholder="Contoh: 7000">
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Stok Awal <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            name="stok_awal"
+                            min="0"
+                            value="{{ old('stok_awal', 0) }}"
+                            required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition"
+                            placeholder="Contoh: 20">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Satuan <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            name="satuan"
+                            required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
+                            <option value="">Pilih Satuan</option>
+                            <option value="pcs" {{ old('satuan') == 'pcs' ? 'selected' : '' }}>pcs</option>
+                            <option value="porsi" {{ old('satuan') == 'porsi' ? 'selected' : '' }}>porsi</option>
+                            <option value="gelas" {{ old('satuan') == 'gelas' ? 'selected' : '' }}>gelas</option>
+                            <option value="botol" {{ old('satuan') == 'botol' ? 'selected' : '' }}>botol</option>
+                            <option value="buah" {{ old('satuan') == 'buah' ? 'selected' : '' }}>buah</option>
+                            <option value="pack" {{ old('satuan') == 'pack' ? 'selected' : '' }}>pack</option>
+                            <option value="bungkus" {{ old('satuan') == 'bungkus' ? 'selected' : '' }}>bungkus</option>
+                            <option value="kg" {{ old('satuan') == 'kg' ? 'selected' : '' }}>kg</option>
+                            <option value="gram" {{ old('satuan') == 'gram' ? 'selected' : '' }}>gram</option>
+                            <option value="liter" {{ old('satuan') == 'liter' ? 'selected' : '' }}>liter</option>
+                        </select>
+                    </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
@@ -237,47 +304,72 @@
         <div class="p-6">
             <div class="flex items-center justify-between mb-5">
                 <h3 class="text-xl font-bold text-gray-900">Edit Produk</h3>
-                <button onclick="closeEditModal()" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <button type="button" onclick="closeEditModal()" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
 
-            <form id="editProductForm" onsubmit="updateProduct(event)">
-                <input type="hidden" id="editIndex" value="">
+            <form id="editProductForm" method="POST" action="">
+                @csrf
+                @method('PUT')
+
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Produk <span class="text-red-500">*</span></label>
-                        <input type="text" id="editProductName" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Nama Produk <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="editProductName" name="nama_produk" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition">
                     </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kategori <span class="text-red-500">*</span></label>
-                        <select id="editProductCategory" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
-                            <option value="Cilok">Cilok</option>
-                            <option value="Minuman">Minuman</option>
-                            <option value="Lainnya">Lainnya</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Kategori <span class="text-red-500">*</span>
+                        </label>
+                        <select id="editProductCategory" name="id_kategori" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
+                            <option value="">Pilih Kategori</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id_kategori }}">
+                                    {{ $category->nama_kategori }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Harga Modal (Rp) <span class="text-red-500">*</span></label>
-                        <input type="number" id="editCostPrice" min="0" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Harga (Rp) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" id="editSellingPrice" name="harga" min="0" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition">
                     </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Harga Jual (Rp) <span class="text-red-500">*</span></label>
-                        <input type="number" id="editSellingPrice" min="0" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                        <textarea id="editDeskripsi" name="deskripsi" rows="3"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition"></textarea>
                     </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select id="editProductStatus" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
-                            <option value="Aktif">Aktif</option>
-                            <option value="Nonaktif">Nonaktif</option>
+                        <select id="editProductStatus" name="status"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition bg-white">
+                            <option value="1">Aktif</option>
+                            <option value="0">Nonaktif</option>
                         </select>
                     </div>
                 </div>
+
                 <div class="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-xl shadow-md shadow-orange-200 transition-all">Simpan Perubahan</button>
+                    <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-xl shadow-md shadow-orange-200 transition-all">
+                        Simpan Perubahan
+                    </button>
                 </div>
             </form>
         </div>
@@ -310,35 +402,40 @@
     // Data produk dari PHP ke JavaScript (tambahkan ID untuk referensi)
     const productsData = @json($products);
 
-    // --- Modal Tambah ---
-    function openAddProductModal() {
+        function openAddProductModal() {
         document.getElementById('addProductModal').classList.remove('hidden');
-        document.getElementById('addProductForm').reset();
     }
 
     function closeAddProductModal(event) {
-        if (!event || event.target === document.getElementById('addProductModal')) {
-            document.getElementById('addProductModal').classList.add('hidden');
+        const modal = document.getElementById('addProductModal');
+        if (!event || event.target === modal) {
+            modal.classList.add('hidden');
         }
     }
 
-    // --- Modal Edit ---
-    function openEditModal(index) {
-        const product = productsData[index];
-        document.getElementById('editIndex').value = index;
-        document.getElementById('editProductName').value = product.name;
-        document.getElementById('editProductCategory').value = product.category;
-        document.getElementById('editCostPrice').value = product.modal;
-        document.getElementById('editSellingPrice').value = product.jual;
-        document.getElementById('editProductStatus').value = product.status;
+    function openEditModal(button) {
+        document.getElementById('editProductForm').action = button.dataset.updateUrl;
+        document.getElementById('editProductName').value = button.dataset.nama;
+        document.getElementById('editProductCategory').value = button.dataset.id_kategori;
+        document.getElementById('editSellingPrice').value = button.dataset.harga;
+        document.getElementById('editDeskripsi').value = button.dataset.deskripsi ?? '';
+        document.getElementById('editProductStatus').value = button.dataset.status;
         document.getElementById('editProductModal').classList.remove('hidden');
     }
 
     function closeEditModal(event) {
-        if (!event || event.target === document.getElementById('editProductModal')) {
-            document.getElementById('editProductModal').classList.add('hidden');
+        const modal = document.getElementById('editProductModal');
+        if (!event || event.target === modal) {
+            modal.classList.add('hidden');
         }
     }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAddProductModal();
+            closeEditModal();
+        }
+    });
 
     function updateProduct(event) {
         event.preventDefault();

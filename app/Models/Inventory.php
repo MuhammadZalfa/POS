@@ -15,6 +15,7 @@ class Inventory extends Model
         'id_produk',
         'tipe',
         'jumlah',
+        'satuan',
         'stok_sebelum',
         'stok_sesudah',
         'tanggal',
