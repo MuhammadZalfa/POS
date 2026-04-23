@@ -4,72 +4,100 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Inventory;
-use App\Models\Produk;
+use App\Models\ItemInventori;
 use Illuminate\Http\Request;
 
 class InventoryController extends Controller
 {
     public function index()
     {
-        $products = Produk::with([
-            'kategori',
-            'inventory' => function ($query) {
-                $query->orderByDesc('id_inventory');
-            }
-        ])->orderByDesc('id_produk')->get();
+        $items = ItemInventori::with([
+            'inventory' => fn ($query) => $query->orderByDesc('id_inventory'),
+        ])->orderByDesc('id_item')->get();
 
-        $inventoryRows = $products->map(function ($product) {
-            $lastInventory = $product->inventory->first();
-
+        $inventoryRows = $items->map(function ($item) {
+            $lastInventory = $item->inventory->first();
             $stok = $lastInventory ? (int) $lastInventory->stok_sesudah : 0;
-            $satuan = $lastInventory->satuan ?? '-';
-            $min = 5;
+            $satuan = $lastInventory->satuan ?? $item->satuan_default;
+            $min = (int) ($item->stok_minimal ?? 5);
 
             if ($stok <= 0) {
-                $status = 'Habis';
+                $statusStok = 'Habis';
             } elseif ($stok <= $min) {
-                $status = 'Stok Rendah';
+                $statusStok = 'Stok Rendah';
             } else {
-                $status = 'Aman';
+                $statusStok = 'Aman';
             }
 
             return [
-                'id_produk'   => $product->id_produk,
-                'nama_produk' => $product->nama_produk,
-                'kategori'    => $product->kategori->nama_kategori ?? '-',
-                'stok'        => $stok,
-                'min'         => $min,
-                'satuan'      => $satuan,
-                'status'      => $status,
+                'id_item'       => $item->id_item,
+                'nama_item'     => $item->nama_item,
+                'jenis'         => $item->jenis ?: '-',
+                'stok'          => $stok,
+                'satuan'        => $satuan,
+                'stok_minimal'  => $min,
+                'status_stok'   => $statusStok,
+                'status_item'   => $item->status,
+                'last_note'     => $lastInventory->keterangan ?? '-',
             ];
         });
 
         return view('admin.inventori', [
-            'products'      => $products,
+            'items'         => $items,
             'inventoryRows' => $inventoryRows,
-            'totalProduk'   => $inventoryRows->count(),
-            'stokMenipis'   => $inventoryRows->where('status', 'Stok Rendah')->count(),
-            'stokHabis'     => $inventoryRows->where('status', 'Habis')->count(),
+            'totalItem'     => $inventoryRows->count(),
+            'stokMenipis'   => $inventoryRows->where('status_stok', 'Stok Rendah')->count(),
+            'stokHabis'     => $inventoryRows->where('status_stok', 'Habis')->count(),
         ]);
+    }
+
+    public function storeItem(Request $request)
+    {
+        $validated = $request->validate([
+            'nama_item'      => 'required|string|max:255|unique:item_inventori,nama_item',
+            'jenis'          => 'nullable|string|max:100',
+            'satuan_default' => 'required|string|max:30',
+            'stok_minimal'   => 'required|integer|min:0',
+            'status'         => 'required|boolean',
+        ]);
+
+        ItemInventori::create($validated);
+
+        return redirect()->route('admin.inventory')->with('success', 'Item inventori berhasil ditambahkan.');
+    }
+
+    public function updateItem(Request $request, ItemInventori $item)
+    {
+        $validated = $request->validate([
+            'nama_item'      => 'required|string|max:255|unique:item_inventori,nama_item,' . $item->id_item . ',id_item',
+            'jenis'          => 'nullable|string|max:100',
+            'satuan_default' => 'required|string|max:30',
+            'stok_minimal'   => 'required|integer|min:0',
+            'status'         => 'required|boolean',
+        ]);
+
+        $item->update($validated);
+
+        return redirect()->route('admin.inventory')->with('success', 'Item inventori berhasil diperbarui.');
     }
 
     public function storeStock(Request $request)
     {
         $validated = $request->validate([
-            'id_produk'   => 'required|exists:produk,id_produk',
+            'id_item'     => 'required|exists:item_inventori,id_item',
             'jumlah'      => 'required|integer|min:1',
             'satuan'      => 'required|string|max:30',
             'keterangan'  => 'nullable|string|max:255',
         ], [
-            'id_produk.required' => 'Produk wajib dipilih.',
-            'id_produk.exists'   => 'Produk tidak valid.',
-            'jumlah.required'    => 'Jumlah stok wajib diisi.',
-            'jumlah.integer'     => 'Jumlah stok harus angka bulat.',
-            'jumlah.min'         => 'Jumlah stok minimal 1.',
-            'satuan.required'    => 'Satuan wajib dipilih.',
+            'id_item.required' => 'Item inventori wajib dipilih.',
+            'id_item.exists'   => 'Item inventori tidak valid.',
+            'jumlah.required'  => 'Jumlah stok wajib diisi.',
+            'jumlah.integer'   => 'Jumlah stok harus angka bulat.',
+            'jumlah.min'       => 'Jumlah stok minimal 1.',
+            'satuan.required'  => 'Satuan wajib dipilih.',
         ]);
 
-        $lastInventory = Inventory::where('id_produk', $validated['id_produk'])
+        $lastInventory = Inventory::where('id_item', $validated['id_item'])
             ->orderByDesc('id_inventory')
             ->first();
 
@@ -77,7 +105,7 @@ class InventoryController extends Controller
         $stokSesudah = $stokSebelum + (int) $validated['jumlah'];
 
         Inventory::create([
-            'id_produk'     => $validated['id_produk'],
+            'id_item'       => $validated['id_item'],
             'tipe'          => 'masuk',
             'jumlah'        => (int) $validated['jumlah'],
             'satuan'        => $validated['satuan'],
@@ -87,27 +115,25 @@ class InventoryController extends Controller
             'keterangan'    => $validated['keterangan'] ?: 'Tambah stok',
         ]);
 
-        return redirect()
-            ->route('admin.inventory')
-            ->with('success', 'Stok berhasil ditambahkan.');
+        return redirect()->route('admin.inventory')->with('success', 'Stok berhasil ditambahkan.');
     }
 
     public function setStock(Request $request)
     {
         $validated = $request->validate([
-            'id_produk'   => 'required|exists:produk,id_produk',
+            'id_item'     => 'required|exists:item_inventori,id_item',
             'stok_baru'   => 'required|integer|min:0',
             'satuan'      => 'required|string|max:30',
             'keterangan'  => 'nullable|string|max:255',
         ], [
-            'id_produk.required' => 'Produk wajib dipilih.',
+            'id_item.required'   => 'Item inventori wajib dipilih.',
             'stok_baru.required' => 'Stok baru wajib diisi.',
             'stok_baru.integer'  => 'Stok baru harus angka bulat.',
             'stok_baru.min'      => 'Stok baru tidak boleh negatif.',
             'satuan.required'    => 'Satuan wajib dipilih.',
         ]);
 
-        $lastInventory = Inventory::where('id_produk', $validated['id_produk'])
+        $lastInventory = Inventory::where('id_item', $validated['id_item'])
             ->orderByDesc('id_inventory')
             ->first();
 
@@ -115,16 +141,14 @@ class InventoryController extends Controller
         $stokBaru = (int) $validated['stok_baru'];
 
         if ($stokBaru === $stokSebelum && ($lastInventory->satuan ?? null) === $validated['satuan']) {
-            return redirect()
-                ->route('admin.inventory')
-                ->with('info', 'Tidak ada perubahan stok.');
+            return redirect()->route('admin.inventory')->with('info', 'Tidak ada perubahan stok.');
         }
 
         $selisih = abs($stokBaru - $stokSebelum);
-        $tipe = $stokBaru > $stokSebelum ? 'masuk' : 'keluar';
+        $tipe = $stokBaru >= $stokSebelum ? 'masuk' : 'keluar';
 
         Inventory::create([
-            'id_produk'     => $validated['id_produk'],
+            'id_item'       => $validated['id_item'],
             'tipe'          => $tipe,
             'jumlah'        => $selisih,
             'satuan'        => $validated['satuan'],
@@ -134,8 +158,6 @@ class InventoryController extends Controller
             'keterangan'    => $validated['keterangan'] ?: 'Penyesuaian stok',
         ]);
 
-        return redirect()
-            ->route('admin.inventory')
-            ->with('success', 'Stok berhasil diperbarui.');
+        return redirect()->route('admin.inventory')->with('success', 'Stok berhasil diperbarui.');
     }
 }

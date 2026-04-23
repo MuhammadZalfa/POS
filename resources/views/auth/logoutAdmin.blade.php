@@ -60,7 +60,7 @@
                 <p class="text-gray-500 mb-6 leading-relaxed">
                     Interface cepat khusus transaksi penjualan
                 </p>
-                <a href="{{ route('kasir') }}" class="inline-flex items-center justify-between w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-xl transition duration-200 group">
+                <a href="{{ route('kasir.index') }}" class="inline-flex items-center justify-between w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-xl transition duration-200 group">
                     <span>Masuk sebagai Kasir</span>
                     <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />

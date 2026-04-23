@@ -10,32 +10,32 @@ class Transaksi extends Model
 {
     protected $table = 'transaksi';
     protected $primaryKey = 'id_transaksi';
-    public $timestamps = false;
 
     protected $fillable = [
+        'kode_transaksi',
         'id_user',
-        'tanggal',
-        'total_harga',
+        'tanggal_transaksi',
+        'metode_pembayaran',
+        'total',
         'bayar',
         'kembalian',
-        'metode_pembayaran',
         'status',
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
-        'total_harga' => 'decimal:2',
+        'tanggal_transaksi' => 'datetime',
+        'total' => 'decimal:2',
         'bayar' => 'decimal:2',
         'kembalian' => 'decimal:2',
     ];
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'id_user', 'id_user');
-    }
-
-    public function detailTransaksi(): HasMany
+    public function details(): HasMany
     {
         return $this->hasMany(DetailTransaksi::class, 'id_transaksi', 'id_transaksi');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id_user');
     }
 }

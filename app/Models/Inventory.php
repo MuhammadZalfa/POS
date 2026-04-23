@@ -12,7 +12,7 @@ class Inventory extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_produk',
+        'id_item',
         'tipe',
         'jumlah',
         'satuan',
@@ -24,10 +24,13 @@ class Inventory extends Model
 
     protected $casts = [
         'tanggal' => 'date',
+        'jumlah' => 'integer',
+        'stok_sebelum' => 'integer',
+        'stok_sesudah' => 'integer',
     ];
 
-    public function produk(): BelongsTo
+    public function item(): BelongsTo
     {
-        return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
+        return $this->belongsTo(ItemInventori::class, 'id_item', 'id_item');
     }
 }

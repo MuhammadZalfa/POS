@@ -21,7 +21,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('kasir') }}" class="group relative inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-orange-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-95">
+            <a href="{{ route('kasir.index') }}" class="group relative inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-orange-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-95">
                 <img src="{{ asset('images/cashier (1).png') }}" alt="Buka Kasir" class="w-5 h-5 transition-transform group-hover:rotate-12">
                 Buka Kasir
                 <span class="absolute -top-1 -right-1 flex h-3 w-3">

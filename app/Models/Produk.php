@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Models\Stock;
 
 class Produk extends Model
 {
@@ -37,13 +35,8 @@ class Produk extends Model
         return $this->hasMany(DetailTransaksi::class, 'id_produk', 'id_produk');
     }
 
-    public function inventory(): HasMany
+    public function resep(): HasMany
     {
-        return $this->hasMany(Inventory::class, 'id_produk', 'id_produk');
-    }
-
-    public function stock(): HasOne
-    {
-        return $this->hasOne(Stock::class, 'id_produk', 'id_produk');
+        return $this->hasMany(ResepProduk::class, 'id_produk', 'id_produk');
     }
 }

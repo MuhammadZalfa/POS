@@ -8,19 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DetailTransaksi extends Model
 {
     protected $table = 'detail_transaksi';
-    protected $primaryKey = 'id_detail';
-    public $timestamps = false;
+    protected $primaryKey = 'id_detail_transaksi';
 
     protected $fillable = [
         'id_transaksi',
         'id_produk',
-        'jumlah',
-        'harga_satuan',
+        'qty',
+        'harga',
         'subtotal',
+        'catatan',
     ];
 
     protected $casts = [
-        'harga_satuan' => 'decimal:2',
+        'qty' => 'integer',
+        'harga' => 'decimal:2',
         'subtotal' => 'decimal:2',
     ];
 
